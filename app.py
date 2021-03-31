@@ -96,25 +96,25 @@ def account():
 
             user.username = form.new_username.data
             user.email = form.email.data
-
-            if form.img.data:  # if file is uploaded
-                filename = images.save(form.img.data)
-                # path to the img directory
-                path_to_img = basedir + '/myproject/static/img/'
-                new_filename = str(user.id)+(os.path.splitext(filename)[-1])
-                if os.path.isfile(os.path.join(path_to_img, new_filename)):
-                    print('delete')
-                    os.remove(os.path.join(path_to_img, new_filename))
-
-                os.rename(os.path.join(path_to_img, filename), os.path.join(path_to_img, new_filename))
-                # the name of photo field will be like the id of the user + extension
-                user.img = new_filename
-
-            db.session.commit()
-            flash('Account updated')
-
         else:
             flash('Chose another name because this name is taken!')
+
+        if form.img.data:  # if file is uploaded
+            filename = images.save(form.img.data)
+            # path to the img directory
+            path_to_img = basedir + '/myproject/static/img/'
+            new_filename = str(user.id)+(os.path.splitext(filename)[-1])
+            if os.path.isfile(os.path.join(path_to_img, new_filename)):
+                print('delete')
+                os.remove(os.path.join(path_to_img, new_filename))
+
+            os.rename(os.path.join(path_to_img, filename), os.path.join(path_to_img, new_filename))
+            # the name of photo field will be like the id of the user + extension
+            user.img = new_filename
+
+            db.session.commit()
+
+        flash('Account updated! Press Ctr+F5, if you upload photo!')
 
         return render_template('account.html', form=form)
 
