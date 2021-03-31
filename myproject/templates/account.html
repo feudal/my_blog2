@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container-lg">
+    <div class="jumbotron my_jumbotron">
+        <h2>Welcome to the {{current_user.username}} page</h2>
+
+        {% if current_user.img == "" %}
+            <img class="logo" src="/static/img/avatar.jpg" alt="default_avatar">
+        {% else %}
+            <img class="logo" src="/static/img/{{current_user.img}}" alt="avatar">
+        {% endif %}
+
+    </div>
+
+    <form method="POST" class="my-form" enctype="multipart/form-data">
+        {{ form.csrf_token() }}
+        {{form.old_username(value=current_user.username)}}
+        {{form.new_username.label}} {{form.new_username(value=current_user.username)}}<br>
+        {{form.email.label}} {{form.email(value=current_user.email)}}<br>
+        {{form.img.label}}<br>
+        {{form.img()}}<br>
+        {{form.update(class_="btn btn-dark")}}
+    </form>
+</div>
+
+{% endblock %}

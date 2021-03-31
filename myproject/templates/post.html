@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block content %}
+
+
+ <div class="jumbotron">
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Are you sure to delete this post?
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary my-button" data-bs-dismiss="modal">Cancel</button>
+        <form action="{{url_for('delete')}}" >
+            <input type="hidden" name="id_post" value="{{post.id}}">
+            <input type="submit" class="btn btn-danger my-button" value="Delete">
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+  {% if post.username == current_user.username %}
+
+    <h3><a href="#" class="card-link">{{ post.title }}</a></h3>
+    <p>Published on: {{ post.text }}</p>
+    <ul>
+        <li>Written by: <a href="#" class="card-link">{{post.username}}</a></li>
+        <li>Published on: {{ (post.time_created| string)[:-7] }}</li>
+    </ul>
+
+    <div class="group">
+        <form action="{{url_for('update')}}" class="my-button">
+            <input type="hidden" name="id_post" value="{{post.id}}">
+            <input type="submit" class="btn btn-secondary my-button" value="Update">
+        </form>
+         <!-- Button trigger modal -->
+        <button type="button" class="btn btn-danger my-button" data-bs-toggle="modal" data-bs-target="#exampleModal">
+          Delete
+        </button>
+    </div>
+
+  {% else %}
+
+    <div class="card-body">
+        <h3 class="card-title">{{ post.title }}</h3>
+        <p class="card-text">Published on: {{ post.text }}</p>
+    </div>
+    <ul class="list-group list-group-flush">
+        <li>Written by: <a href="#" class="card-link">{{post.username}}</a></li>
+        <li>Published on: {{ (post.time_created| string)[:-7] }}</li>
+    </ul>
+
+  {% endif %}
+
+ </div>
+
+{% endblock %}
