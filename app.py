@@ -50,11 +50,15 @@ def log_in():
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
 
-        if user.check_password(form.password.data) and user is not None:
-            login_user(user)
-            flash("Logged in Successfully!")
+        try:
+            if user.check_password(form.password.data) and user is not None:
+                login_user(user)
+                flash("Logged in Successfully!")
+        except AttributeError:
+            flash("Wrong password or login")
+            return render_template('login.html', form=form)
 
-            return redirect(url_for('home'))
+        return redirect(url_for('home'))
 
     return render_template('login.html', form=form)
 
@@ -85,21 +89,29 @@ def account():
         user = User.query.filter_by(username=form.old_username.data).first()
         #  will change the name of the user only if the new name isn't in db
         if not User.query.filter_by(username=form.new_username.data).first():
+            # change the name in all posts
+            username_in_posts = Post.query.filter_by(username=user.username)
+            for my_post in username_in_posts:
+                my_post.username = form.new_username.data
+
             user.username = form.new_username.data
             user.email = form.email.data
 
-            filename = images.save(form.img.data)
-            # path to the right directory
-            path_to_img = basedir + '/myproject/static/img/'
-            new_filename = str(user.id)+(os.path.splitext(filename)[-1])
-            if os.path.isfile(os.path.join(path_to_img, new_filename)):
-                print('delete')
-                os.remove(os.path.join(path_to_img, new_filename))
+            if form.img.data:  # if file is uploaded
+                filename = images.save(form.img.data)
+                # path to the img directory
+                path_to_img = basedir + '/myproject/static/img/'
+                new_filename = str(user.id)+(os.path.splitext(filename)[-1])
+                if os.path.isfile(os.path.join(path_to_img, new_filename)):
+                    print('delete')
+                    os.remove(os.path.join(path_to_img, new_filename))
 
-            os.rename(os.path.join(path_to_img, filename), os.path.join(path_to_img, new_filename))
-            # name the photo field like the id of the user + extension
-            user.img = new_filename
+                os.rename(os.path.join(path_to_img, filename), os.path.join(path_to_img, new_filename))
+                # the name of photo field will be like the id of the user + extension
+                user.img = new_filename
+
             db.session.commit()
+            flash('Account updated')
 
         else:
             flash('Chose another name because this name is taken!')
@@ -119,6 +131,7 @@ def create():
         post = Post(form.title.data, username, form.text.data, user.id)
         db.session.add(post)
         db.session.commit()
+        flash('Post created successfully!')
 
         return redirect(url_for('home'))
 
@@ -141,6 +154,7 @@ def update():
         my_post.title = form.title.data
         my_post.text = form.text.data
         db.session.commit()
+        flash('Post updated successfully')
 
         return redirect(url_for('home'))
 
@@ -153,6 +167,7 @@ def delete():
     post_id = request.args.get('id_post')
     Post.query.filter_by(id=post_id).delete()
     db.session.commit()
+    flash('Post deleted successfully')
 
     return redirect(url_for('home'))
 
