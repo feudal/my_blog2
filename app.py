@@ -1,13 +1,13 @@
 import os
 import flask_login
 from flask import render_template, redirect, url_for, flash, request
+from flask.views import MethodView
 from flask_login import login_user, login_required, logout_user
 
 from myproject import app, db
 from myproject.forms import LoginForm, RegistrationForm, PostForm, AccountForm
 from myproject.models import User, Post
 from flask_uploads import configure_uploads, IMAGES, UploadSet
-
 
 app.config['SECRET_KEY'] = 'secret_key'
 app.config['UPLOADED_IMAGES_DEST'] = 'myproject/static/img'
@@ -93,45 +93,85 @@ def register():
     return render_template('register.html', form=form)
 
 
-@app.route('/account', methods=['GET', 'POST'])
-@login_required
-def account():
-    form = AccountForm()
+class Account(MethodView):
+    decorators = [login_required]
 
-    if form.validate_on_submit():
-        user = User.query.filter_by(username=form.old_username.data).first()
-        #  will change the name of the user only if the new name isn't in db
-        if not User.query.filter_by(username=form.new_username.data).first():
-            # change the name in all posts
-            username_in_posts = Post.query.filter_by(username=user.username)
-            for my_post in username_in_posts:
-                my_post.username = form.new_username.data
-
-            user.username = form.new_username.data
-            user.email = form.email.data
-        else:
-            flash('Chose another name because this name is taken!')
-
-        if form.img.data:  # if file is uploaded
-            filename = images.save(form.img.data)
-            # path to the img directory
-            path_to_img = basedir + '/myproject/static/img/'
-            new_filename = str(user.id)+(os.path.splitext(filename)[-1])
-            if os.path.isfile(os.path.join(path_to_img, new_filename)):
-                print('delete')
-                os.remove(os.path.join(path_to_img, new_filename))
-
-            os.rename(os.path.join(path_to_img, filename), os.path.join(path_to_img, new_filename))
-            # the name of photo field will be like the id of the user + extension
-            user.img = new_filename
-
-            db.session.commit()
-
-        flash('Account updated! Press Ctr+F5, if you upload photo!')
-
+    def get(self):
+        form = AccountForm()
         return render_template('account.html', form=form)
 
-    return render_template('account.html', form=form)
+    def post(self):
+        form = AccountForm()
+        user_object = User.query.filter_by(username=flask_login.current_user.username).first()
+        old_username = user_object.username
+        new_username = form.new_username.data
+        old_email = user_object.email
+        new_email = form.email.data
+
+        username_message = self.check_change_user(old_username, new_username, user_object)
+        email_message = self.check_change_email(old_email, new_email, user_object)
+
+        if username_message == 'name is in the db' or email_message == 'email is in the db':
+            flash('The name/email is taken!')
+            return render_template('account.html', form=form)
+
+        img_message = self.check_change_img(user_object, form)
+
+        print(username_message, email_message, img_message)
+
+        # message generating
+        if username_message == 'not changed' and email_message == 'not changed' and img_message == 'not changed':
+            return render_template('account.html', form=form)
+        if username_message == 'has changed' and email_message == 'not changed' and img_message == 'not changed':
+            flash('Username changed successfully!')
+            return render_template('account.html', form=form)
+        if username_message == 'not changed' and email_message == 'has changed' and img_message == 'not changed':
+            flash('Email changed successfully!')
+            return render_template('account.html', form=form)
+        if username_message == 'not changed' and email_message == 'not changed' and img_message == 'has changed':
+            flash('Image uploaded successfully!')
+            return render_template('account.html', form=form)
+
+        flash('Information changed successfully!')
+        return render_template('account.html', form=form)
+
+    def check_change_user(self, o_user, n_user, user_obj):
+        if o_user == n_user:
+            return 'not changed'
+        if Post.query.filter_by(username=n_user) is None:
+            return 'name is in the db'
+
+        user_obj.username = n_user
+        user_posts = Post.query.filter_by(username=o_user)
+        # change name in posts
+        for his_post in user_posts:
+            his_post.username = n_user
+        db.session.commit()
+        return 'has changed'
+
+    def check_change_email(self, o_email, n_email, user_obj):
+        if o_email == n_email:
+            return 'not changed'
+        if Post.query.filter_by(username=n_email) is None:
+            return 'email is in the db'
+        user_obj.email = n_email
+        db.session.commit()
+        return "has changed"
+
+    def check_change_img(self, user_obj, form):
+        if not form.img.data:
+            return 'not changed'
+
+        new_filename = images.save(form.img.data)  # save img in the folder img
+        old_filename = user_obj.img
+        user_obj.img = new_filename
+        db.session.commit()
+        # path to the img directory
+        if old_filename:
+            path_to_img = basedir + '\myproject\static\img\\' + old_filename
+            os.remove(path_to_img)
+
+        return 'has changed'
 
 
 @app.route('/create', methods=['GET', 'POST'])
@@ -184,6 +224,8 @@ def delete():
 
     return redirect(url_for('home'))
 
+
+app.add_url_rule('/account', view_func=Account.as_view('account'))
 
 if __name__ == '__main__':
     app.run(debug=True)

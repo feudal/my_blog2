@@ -40,8 +40,8 @@ class PostForm(FlaskForm):
 
 class AccountForm(FlaskForm):
     old_username = HiddenField()
-    new_username = StringField('Username')
-    email = StringField('Email')
+    new_username = StringField('Username', validators=[DataRequired(message='username field can\'t be empty')])
+    email = StringField('Email', validators=[DataRequired(message='email field can\'t be empty')])
     img = FileField('Update profile picture')
     update = SubmitField('Update')
 
