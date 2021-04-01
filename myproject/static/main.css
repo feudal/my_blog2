@@ -38,18 +38,23 @@ ul {
   padding: 0;
 }
 
-.my-form {
-	width: 100%;
-}
-
-.my-form input {
-	margin-bottom: 20px;
-}
-
 .logo {
 	width: 250px;
 }
 
 .my-alert {
 	margin-bottom: 0;
+}
+
+.register-form, .login-form, .update-form {
+	max-width: 300px;
+	display: flex;
+	flex-direction: column;
+	margin: auto;
+}
+
+.login-form input,
+.update-form input,
+.register-form input {
+	margin-bottom: -5px;
 }

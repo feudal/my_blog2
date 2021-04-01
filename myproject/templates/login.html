@@ -2,11 +2,11 @@
 {% block content %}
 
 <div class="jumbotron">
-    <form method="POST">
+    <form method="POST" class="login-form">
         {{form.hidden_tag()}}
         {{form.email.label}}{{form.email()}}<br>
         {{form.password.label}}{{form.password()}}<br>
-        {{form.submit}}
+        {{form.submit(class_='btn btn-dark')}}
     </form>
 </div>
 

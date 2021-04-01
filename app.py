@@ -59,6 +59,7 @@ def log_in():
             flash("The password is wrong!")
             return render_template('login.html', form=form)
 
+        login_user(user)
         flash('You logged successfully!')
         return redirect(url_for('home'))
 

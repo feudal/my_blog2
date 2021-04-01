@@ -13,7 +13,7 @@
 
     </div>
 
-    <form method="POST" class="my-form" enctype="multipart/form-data">
+    <form method="POST" class="update-form" enctype="multipart/form-data">
         {{ form.csrf_token() }}
         {{form.old_username(value=current_user.username)}}
         {{form.new_username.label}} {{form.new_username(value=current_user.username)}}<br>
