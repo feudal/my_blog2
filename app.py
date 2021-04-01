@@ -47,17 +47,19 @@ def log_out():
 @app.route('/login', methods=['GET', 'POST'])
 def log_in():
     form = LoginForm()
+
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
 
-        try:
-            if user.check_password(form.password.data) and user is not None:
-                login_user(user)
-                flash("Logged in Successfully!")
-        except AttributeError:
-            flash("Wrong password or login")
+        if user is None:
+            flash("The email is wrong!")
             return render_template('login.html', form=form)
 
+        if not user.check_password(form.password.data):
+            flash("The password is wrong!")
+            return render_template('login.html', form=form)
+
+        flash('You logged successfully!')
         return redirect(url_for('home'))
 
     return render_template('login.html', form=form)
