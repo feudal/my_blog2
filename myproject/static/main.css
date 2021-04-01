@@ -58,3 +58,8 @@ ul {
 .register-form input {
 	margin-bottom: -5px;
 }
+
+.register-form span {
+	margin-top: -15px;
+	margin-bottom: 15px;
+}

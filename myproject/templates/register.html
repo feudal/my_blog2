@@ -8,6 +8,9 @@
         {{form.username.label}} {{form.username()}}<br>
         {{form.password.label}} {{form.password()}}<br>
         {{form.pass_confirm.label}} {{form.pass_confirm()}}<br>
+        {% for error in form.password.errors %}
+         <span style="color: red;">{{ error }}</span>
+         {% endfor %}
         {{form.submit(class_='btn btn-dark')}}
     </form>
 </div>

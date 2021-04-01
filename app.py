@@ -70,6 +70,16 @@ def log_in():
 def register():
     form = RegistrationForm()
 
+    user = User.query.filter_by(email=form.email.data).first()
+    if user:
+        flash("This email is in our base! Check if you wrote correctly!")
+        return render_template('register.html', form=form)
+
+    user = User.query.filter_by(username=form.username.data).first()
+    if user:
+        flash("This username is taken! Try another one!")
+        return render_template('register.html', form=form)
+
     if form.validate_on_submit():
         user = User(email=form.email.data,
                     username=form.username.data,
