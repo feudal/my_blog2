@@ -162,14 +162,16 @@ class Account(MethodView):
         if not form.img.data:
             return 'not changed'
 
-        new_filename = images.save(form.img.data)  # save img in the folder img
         old_filename = user_obj.img
-        user_obj.img = new_filename
         db.session.commit()
-        # path to the img directory
+        # delete old file
         if old_filename:
             path_to_img = basedir + '\myproject\static\img\\' + old_filename
             os.remove(path_to_img)
+
+        new_filename = images.save(form.img.data)  # save img in the folder img
+        user_obj.img = new_filename
+        db.session.commit()
 
         return 'has changed'
 
