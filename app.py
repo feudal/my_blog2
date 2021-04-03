@@ -164,10 +164,10 @@ class Account(MethodView):
 
         old_filename = user_obj.img
         db.session.commit()
-        # delete old file
-        if old_filename:
-            path_to_img = basedir + '\myproject\static\img\\' + old_filename
-            os.remove(path_to_img)
+        # delete old file # remove because on heroku server you can't delete files
+        # if old_filename:
+        #     path_to_img = basedir + '\myproject\static\img\\' + old_filename
+        #     os.remove(path_to_img)
 
         new_filename = images.save(form.img.data)  # save img in the folder img
         user_obj.img = new_filename
